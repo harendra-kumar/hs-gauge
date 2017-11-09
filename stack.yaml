@@ -4,5 +4,7 @@ resolver: nightly-2017-09-07
 packages:
 - '.'
 extra-deps:
-  - basement-0.0.3
+- basement-0.0.3
+- streaming-0.1.4.5
+- mmorph-1.0.9
 flags: {}

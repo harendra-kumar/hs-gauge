@@ -191,14 +191,26 @@ test-suite cleanup
     tasty,
     tasty-hunit
 
-benchmark self
-  type:                 exitcode-stdio-1.0
-  hs-source-dirs:       benchs
-  default-language:     Haskell2010
-  main-is:              Main.hs
+benchmark gcbug
+  default-language: Haskell2010
+  type:             exitcode-stdio-1.0
+  hs-source-dirs:   benchs
+  main-is:          GCBug.hs
+  ghc-options: -O2 -Wall -fwarn-identities -fwarn-incomplete-record-updates
+               -fwarn-incomplete-uni-patterns -fwarn-tabs
+               -with-rtsopts "-T"
+
   build-depends:
-    base,
-    gauge
+    base                == 4.*,
+    gauge,
+    mtl                 >= 2     && < 2.3,
+    random              >= 1.0   && < 2,
+    transformers,
+
+    conduit             >= 1.0   && < 1.3,
+    conduit-combinators >= 0.2.5 && < 1.2,
+    pipes               >= 4     && < 4.4,
+    streaming
 
 source-repository head
   type:     git
