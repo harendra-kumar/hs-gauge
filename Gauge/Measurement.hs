@@ -58,6 +58,7 @@ import Control.Exception (finally,evaluate)
 import Data.Data (Data, Typeable)
 import Data.Int (Int64)
 import Data.List (unfoldr)
+import Data.Maybe (fromJust)
 import Data.Word (Word64, Word8)
 #ifndef mingw32_HOST_OS
 import Foreign.C (CLong(..))
@@ -200,6 +201,8 @@ getGCStatistics = do
         nsToSecs :: Int64 -> Double
         nsToSecs ns = fromIntegral ns * 1.0E-9
 
+--    putStrLn $ "mutator wall secs: " ++ (show $ mutator_elapsed_ns stats)
+
     return $ GCStatistics {
         gcStatsBytesAllocated         = fromIntegral $ allocated_bytes stats
       , gcStatsNumGcs                 = fromIntegral $ gcs stats
@@ -310,17 +313,22 @@ measure :: Benchmarkable -- ^ Operation to benchmark.
         -> Int64         -- ^ Number of iterations.
         -> IO Measured
 measure bm iters = runBenchmarkable bm iters addResults $ \act -> do
-  startStats <- getGCStatistics
-  startRUsage <- getRUsage
-#ifdef GAUGE_MEASURE_TIME_NEW
-  TimeRecord time cpuTime cycles <- measureTime act
-#else
-  (time, cpuTime, cycles) <- measureTime act
-#endif
-  endRUsage <- getRUsage
-  endStats <- getGCStatistics
-  let !m = applyGCStatistics endStats startStats $
-           applyRUStatistics endRUsage startRUsage $ measured {
+  start <- Stats.getRTSStats
+  act
+  end <- Stats.getRTSStats
+  let s = mutator_elapsed_ns start
+  let e = mutator_elapsed_ns end
+  if s > e
+  then putStrLn $ "Decreased by: " ++ (show (s - e)) ++ " : "
+            ++ "s = " ++ (show s) ++ " e = " ++ (show e)
+  else return ()
+
+  let time = ClockTime 100000000
+  let cpuTime = CpuTime 0
+  let cycles = Cycles 0
+  let !m = -- applyGCStatistics endStats startStats $
+           -- applyRUStatistics endRUsage startRUsage $ measured {
+           measured {
              measTime    = outTime time
            , measCpuTime = outCputime cpuTime
            , measCycles  = outCycles cycles

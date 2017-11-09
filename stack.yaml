@@ -1,6 +1,8 @@
-resolver: lts-9.10
+#resolver: lts-9.10
+resolver: nightly-2017-09-07
 
 packages:
 - '.'
-extra-deps: []
+extra-deps:
+  - basement-0.0.3
 flags: {}
